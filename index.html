@@ -2,16 +2,15 @@
 <html>
 <head>
     <title>College Swim Connect Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-    <!-- Include jsPDF and html2canvas for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        /* Map container */
         #map { 
-            height: 600px; 
+            height: 60vh; 
             width: 100%; 
             border: 2px solid #0073E6; 
             border-radius: 10px; 
@@ -33,6 +32,8 @@
             font-size: 12px; 
             max-height: 200px; 
             overflow-y: auto; 
+            width: auto;
+            max-width: 250px;
         }
         .filter-container { 
             padding: 25px; 
@@ -170,12 +171,9 @@
             outline: none;
             box-shadow: none;
         }
-        /* Custom marker styling for professional look */
         .custom-marker {
-            /* Add a subtle drop-shadow */
             filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
         }
-        /* Favorites container styles */
         .favorites-container {
             background: white;
             padding: 15px;
@@ -225,6 +223,59 @@
         .pdf-btn:hover {
             background: #005bb5;
         }
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .filter-container {
+                flex-direction: column;
+                padding: 15px;
+                gap: 15px;
+            }
+            .filter-section {
+                width: 100%;
+            }
+            input[type="range"] {
+                width: 100%;
+            }
+            #reset-btn {
+                position: static;
+                width: 100%;
+                margin-top: 10px;
+            }
+            .cta-bubble {
+                padding: 1rem;
+                margin-top: 1rem;
+            }
+            .cta-bubble h3 {
+                font-size: 1.5rem;
+            }
+            .cta-bubble p {
+                font-size: 1rem;
+            }
+            .cta-bubble button {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            .leaflet-popup-content {
+                font-size: 10px;
+                max-height: 150px;
+                max-width: 200px;
+            }
+            .favorites-container {
+                padding: 10px;
+            }
+            .favorite-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 5px;
+            }
+            .remove-btn {
+                margin-top: 5px;
+            }
+            .pdf-btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -250,7 +301,6 @@
     </div>
     <div id="map"></div>
     
-    <!-- Favorites List Section -->
     <div class="favorites-container" id="favorites-container">
         <h2>⭐ Favorite Schools</h2>
         <div id="favorites-list"></div>
@@ -260,7 +310,6 @@
     <div class="cta-bubble">
         <h3>🚀 Join Our Recruiting Bootcamp Starting April 27!</h3>
         <p>Get personalized guidance from NCAA athletes.</p>
-        <!-- Edit 2: Updated the Book Now button link -->
         <a href="https://www.collegeswimconnect.com/bootcamp-store" style="text-decoration: none;">
             <button>Click Here to Book Now!</button>
         </a>
@@ -270,7 +319,6 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script>
         var favorites = [];
-
         var map = L.map('map').setView([39.8283, -98.5795], 3.5);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> & <a href="https://carto.com/attributions">CARTO</a>',
@@ -290,7 +338,6 @@
         });
         map.addLayer(markers);
 
-        // Utility functions for filtering
         function getSelectedDivisions() {
             const selected = Array.from(document.querySelectorAll('.toggle-btn[data-division].active'))
                 .map(btn => btn.getAttribute('data-division'));
@@ -303,7 +350,6 @@
             return selected.length > 0 ? selected : null;
         }
 
-        // Load JSON data and set up markers and filter buttons
         fetch('./schools_real_updated (1).json')
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
@@ -311,12 +357,8 @@
             })
             .then(data => {
                 var allMarkers = [];
-                
-                // Create markers and bind popups
                 data.forEach(school => {
                     if (!school.lat || !school.lon) return;
-                    
-                    // Edit 1: Removed the "Address" line from the popup
                     var popupContent = `
                         <b style="font-size: 14px;">${school.school}</b><br>
                         <b>Location:</b> ${school.location}<br>
@@ -325,8 +367,6 @@
                         <b>Division:</b> ${school.division}<br>
                         <button onclick="addToFavorites('${school.school}', '${school.location}', '${school.campus_type}', '${school.division}')">⭐ Favorite</button>
                     `;
-                    
-                    // Updated marker style for a more professional look:
                     var marker = L.circleMarker([school.lat, school.lon], {
                         radius: 10,
                         className: 'custom-marker',
@@ -337,11 +377,9 @@
                         opacity: 1,
                         fillOpacity: 0.9
                     }).bindPopup(popupContent);
-                    
                     allMarkers.push({ marker: marker, data: school });
                 });
 
-                // Populate Campus Type toggle buttons dynamically
                 var campusContainer = document.getElementById("campus-filter");
                 var campusTypes = [...new Set(data.map(s => s.campus_type))];
                 campusTypes.forEach(type => {
@@ -356,7 +394,6 @@
                     campusContainer.appendChild(btn);
                 });
 
-                // Attach event listeners for division buttons (for proper scope)
                 document.querySelectorAll('.toggle-btn[data-division]').forEach(btn => {
                     btn.addEventListener('click', function() {
                         this.classList.toggle('active');
@@ -369,13 +406,11 @@
                     var campuses = getSelectedCampuses();
                     var maxPop = parseInt(document.getElementById("population").value);
                     document.getElementById("pop-value").textContent = maxPop.toLocaleString();
-
                     markers.clearLayers();
                     allMarkers.forEach(m => {
                         const matchesDivision = divisions.includes(m.data.division);
                         const matchesCampus = !campuses || campuses.includes(m.data.campus_type);
                         const matchesPopulation = m.data.student_population <= maxPop;
-                        
                         if (matchesDivision && matchesCampus && matchesPopulation) {
                             markers.addLayer(m.marker);
                         }
@@ -391,13 +426,10 @@
 
                 document.getElementById("population").addEventListener("input", updateMap);
                 document.getElementById("reset-btn").addEventListener("click", resetFilters);
-
-                // Initial map update
                 updateMap();
             })
             .catch(error => console.error('Error:', error));
 
-        // Favorites functions
         function addToFavorites(name, location, campus, division) {
             if (!favorites.some(item => item.name === name)) {
                 favorites.push({ name, location, campus, division });
@@ -427,7 +459,6 @@
                 alert("No favorites to download!");
                 return;
             }
-            // Create a temporary container for the favorites list
             var tempContainer = document.createElement("div");
             tempContainer.style.padding = "20px";
             tempContainer.style.background = "white";
@@ -436,7 +467,6 @@
                 tempContainer.innerHTML += `<p>${index+1}. <b>${item.name}</b> - ${item.location} (${item.division})</p>`;
             });
             document.body.appendChild(tempContainer);
-            // Convert to image using html2canvas
             const canvas = await html2canvas(tempContainer);
             const imgData = canvas.toDataURL('image/png');
             var { jsPDF } = window.jspdf;
