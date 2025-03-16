@@ -260,7 +260,8 @@
     <div class="cta-bubble">
         <h3>🚀 Join Our Recruiting Bootcamp Starting April 27!</h3>
         <p>Get personalized guidance from NCAA athletes.</p>
-        <a href="#" style="text-decoration: none;">
+        <!-- Edit 2: Updated the Book Now button link -->
+        <a href="https://www.collegeswimconnect.com/bootcamp-store" style="text-decoration: none;">
             <button>Click Here to Book Now!</button>
         </a>
     </div>
@@ -311,17 +312,17 @@
             .then(data => {
                 var allMarkers = [];
                 
-                // Create markers and bind popups (removed head coach info)
+                // Create markers and bind popups
                 data.forEach(school => {
                     if (!school.lat || !school.lon) return;
                     
+                    // Edit 1: Removed the "Address" line from the popup
                     var popupContent = `
                         <b style="font-size: 14px;">${school.school}</b><br>
                         <b>Location:</b> ${school.location}<br>
                         <b>Campus:</b> ${school.campus_type}<br>
                         <b>Population:</b> ${school.student_population.toLocaleString()}<br>
                         <b>Division:</b> ${school.division}<br>
-                        <b>Address:</b> ${school["Address:"]}<br>
                         <button onclick="addToFavorites('${school.school}', '${school.location}', '${school.campus_type}', '${school.division}')">⭐ Favorite</button>
                     `;
                     
