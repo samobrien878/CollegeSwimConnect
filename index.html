@@ -2,283 +2,30 @@
 <html>
 <head>
     <title>College Swim Connect Map</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <!-- Include jsPDF and html2canvas for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <style>
-        #map { 
-            height: 60vh; 
-            width: 100%; 
-            border: 2px solid #0073E6; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
-        }
-        body { 
-            font-family: 'Arial', sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            background: linear-gradient(135deg, #1E90FF, #4682B4); 
-        }
-        .leaflet-popup-content-wrapper { 
-            background: rgba(255, 255, 255, 0.95); 
-            border-radius: 5px; 
-            padding: 10px; 
-        }
-        .leaflet-popup-content { 
-            color: #0073E6; 
-            font-size: 12px; 
-            max-height: 200px; 
-            overflow-y: auto; 
-            width: auto;
-            max-width: 250px;
-        }
-        .filter-container { 
-            padding: 25px; 
-            background: #e6f2ff;
-            border-radius: 15px; 
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); 
-            margin-bottom: 25px; 
-            display: flex; 
-            gap: 30px; 
-            align-items: flex-start; 
-            flex-wrap: wrap; 
-            border: 1px solid #0073E6; 
-            position: relative;
-        }
-        .filter-section { 
-            background: rgba(255, 255, 255, 0.1); 
-            padding: 15px; 
-            border-radius: 10px; 
-        }
-        label { 
-            color: #FFFFFF; 
-            font-weight: 700; 
-            font-size: 1.2rem; 
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); 
-            display: block;
-            margin-bottom: 5px;
-        }
-        input[type="range"] { 
-            width: 200px;
-            background: #0073E6; 
-            border: none;
-            border-radius: 8px;
-        }
-        input[type="range"]:hover { 
-            background: #FF8C00; 
-        }
-        #pop-value { 
-            color: #FFA500; 
-            font-weight: bold; 
-            font-size: 1.1rem; 
-            margin-left: 10px;
-        }
-        .toggle-btn {
-            background: #0073E6;
-            color: #FFFFFF;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            margin-right: 5px;
-            margin-bottom: 5px;
-        }
-        .toggle-btn.active {
-            background: #FF8C00;
-        }
-        .toggle-btn:hover {
-            transform: scale(1.05);
-        }
-        #reset-btn { 
-            background: #FFA500; 
-            color: #FFFFFF; 
-            padding: 10px 20px; 
-            border: none; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            font-size: 1rem; 
-            cursor: pointer; 
-            transition: background-color 0.3s ease; 
-            position: absolute;
-            right: 25px;
-            top: 25px;
-        }
-        #reset-btn:hover { 
-            background: #FF8C00; 
-        }
-        .header-container { 
-            margin-bottom: 20px; 
-        }
-        .title { 
-            color: #FFFFFF; 
-            font-size: 2.5rem; 
-            font-weight: 700; 
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7); 
-            margin: 0; 
-        }
-        .cta-bubble { 
-            text-align: center; 
-            padding: 2rem; 
-            background-color: #FFA500; 
-            border-radius: 10px; 
-            margin-top: 2rem; 
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
-        }
-        .cta-bubble h3 { 
-            color: #000000; 
-            font-size: 1.8rem; 
-            margin: 0 0 10px 0; 
-        }
-        .cta-bubble p { 
-            color: #000000; 
-            font-size: 1.2rem; 
-            margin: 0 0 15px 0; 
-        }
-        .cta-bubble button { 
-            background-color: #0073E6; 
-            color: #FFFFFF; 
-            padding: 12px 24px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 1rem; 
-            transition: background-color 0.3s ease; 
-        }
-        .cta-bubble button:hover { 
-            background-color: #FF8C00; 
-        }
-        .marker-cluster div { 
-            background: #0073E6; 
-            color: white; 
-            border-radius: 50%; 
-            text-align: center; 
-            font-weight: bold; 
-            line-height: 30px; 
-            width: 30px; 
-            height: 30px; 
-            border: none;
-            outline: none;
-        }
-        .marker-cluster div:hover,
-        .marker-cluster div:focus {
-            outline: none;
-            box-shadow: none;
-        }
-        .custom-marker {
-            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
-        }
-        .favorites-container {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin-top: 20px;
-        }
-        .favorites-container h2 {
-            margin-top: 0;
-            font-size: 1.8rem;
-            color: #0073E6;
-        }
-        .favorite-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-        }
-        .favorite-item:last-child {
-            border-bottom: none;
-        }
-        .remove-btn {
-            background: #FF4C4C;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .remove-btn:hover {
-            background: #FF0000;
-        }
-        .pdf-btn {
-            background: #0073E6;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-top: 10px;
-            display: block;
-            width: 100%;
-        }
-        .pdf-btn:hover {
-            background: #005bb5;
-        }
-        /* Mobile Optimizations */
-        @media (max-width: 768px) {
-            .filter-container {
-                flex-direction: column;
-                padding: 15px;
-                gap: 15px;
-            }
-            .filter-section {
-                width: 100%;
-            }
-            input[type="range"] {
-                width: 100%;
-            }
-            #reset-btn {
-                position: static;
-                width: 100%;
-                margin-top: 10px;
-            }
-            .cta-bubble {
-                padding: 1rem;
-                margin-top: 1rem;
-            }
-            .cta-bubble h3 {
-                font-size: 1.5rem;
-            }
-            .cta-bubble p {
-                font-size: 1rem;
-            }
-            .cta-bubble button {
-                padding: 10px 20px;
-                font-size: 0.9rem;
-            }
-            .leaflet-popup-content {
-                font-size: 10px;
-                max-height: 150px;
-                max-width: 200px;
-            }
-            .favorites-container {
-                padding: 10px;
-            }
-            .favorite-item {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 5px;
-            }
-            .remove-btn {
-                margin-top: 5px;
-            }
-            .pdf-btn {
-                padding: 8px 16px;
-                font-size: 0.9rem;
-            }
-        }
-    </style>
+    <!-- Link to the CSS file -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Modal for SwimCloud lookup -->
+    <div id="swimcloud-modal" class="modal">
+        <div class="modal-content">
+          <h2>SwimCloud Profile Lookup</h2>
+          <p>Please enter your SwimCloud profile URL and your gender (M/F):</p>
+          <form id="swimcloud-form">
+            <input type="text" id="swimcloud-link" name="swimcloud-link" placeholder="https://www.swimcloud.com/swimmer/123456" required>
+            <input type="text" id="gender" name="gender" placeholder="M or F" required>
+            <button type="submit">Submit</button>
+          </form>
+          <div id="swimcloud-results"></div>
+        </div>
+    </div>
+  
     <div class="header-container">
         <h1 class="title">🏊‍♂️ College Swim Connect Map</h1>
     </div>
@@ -301,6 +48,7 @@
     </div>
     <div id="map"></div>
     
+    <!-- Favorites List Section -->
     <div class="favorites-container" id="favorites-container">
         <h2>⭐ Favorite Schools</h2>
         <div id="favorites-list"></div>
@@ -310,171 +58,16 @@
     <div class="cta-bubble">
         <h3>🚀 Join Our Recruiting Bootcamp Starting April 27!</h3>
         <p>Get personalized guidance from NCAA athletes.</p>
+        <!-- Updated Book Now button link -->
         <a href="https://www.collegeswimconnect.com/bootcamp-store" style="text-decoration: none;">
             <button>Click Here to Book Now!</button>
         </a>
     </div>
 
+    <!-- Load Leaflet and MarkerCluster scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-    <script>
-        var favorites = [];
-        var map = L.map('map').setView([39.8283, -98.5795], 3.5);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> & <a href="https://carto.com/attributions">CARTO</a>',
-            maxZoom: 18
-        }).addTo(map);
-
-        var markers = L.markerClusterGroup({
-            maxClusterRadius: 50,
-            disableClusteringAtZoom: 10,
-            iconCreateFunction: function(cluster) {
-                return L.divIcon({
-                    html: `<div style="width: 30px; height: 30px;">${cluster.getChildCount()}</div>`,
-                    className: 'marker-cluster',
-                    iconSize: L.point(30, 30)
-                });
-            }
-        });
-        map.addLayer(markers);
-
-        function getSelectedDivisions() {
-            const selected = Array.from(document.querySelectorAll('.toggle-btn[data-division].active'))
-                .map(btn => btn.getAttribute('data-division'));
-            return selected.length > 0 ? selected : ['D1', 'D2', 'D3'];
-        }
-
-        function getSelectedCampuses() {
-            const selected = Array.from(document.querySelectorAll('.toggle-btn[data-campus].active'))
-                .map(btn => btn.getAttribute('data-campus'));
-            return selected.length > 0 ? selected : null;
-        }
-
-        fetch('./schools_real_updated (1).json')
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
-            .then(data => {
-                var allMarkers = [];
-                data.forEach(school => {
-                    if (!school.lat || !school.lon) return;
-                    var popupContent = `
-                        <b style="font-size: 14px;">${school.school}</b><br>
-                        <b>Location:</b> ${school.location}<br>
-                        <b>Campus:</b> ${school.campus_type}<br>
-                        <b>Population:</b> ${school.student_population.toLocaleString()}<br>
-                        <b>Division:</b> ${school.division}<br>
-                        <button onclick="addToFavorites('${school.school}', '${school.location}', '${school.campus_type}', '${school.division}')">⭐ Favorite</button>
-                    `;
-                    var marker = L.circleMarker([school.lat, school.lon], {
-                        radius: 10,
-                        className: 'custom-marker',
-                        fillColor: school.division === "D1" ? "#0073E6" : 
-                                   school.division === "D2" ? "#FFA500" : "#FFD700",
-                        color: "#FFFFFF",
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.9
-                    }).bindPopup(popupContent);
-                    allMarkers.push({ marker: marker, data: school });
-                });
-
-                var campusContainer = document.getElementById("campus-filter");
-                var campusTypes = [...new Set(data.map(s => s.campus_type))];
-                campusTypes.forEach(type => {
-                    var btn = document.createElement("button");
-                    btn.className = "toggle-btn";
-                    btn.setAttribute("data-campus", type);
-                    btn.textContent = type;
-                    btn.addEventListener('click', function() {
-                        this.classList.toggle('active');
-                        updateMap();
-                    });
-                    campusContainer.appendChild(btn);
-                });
-
-                document.querySelectorAll('.toggle-btn[data-division]').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        this.classList.toggle('active');
-                        updateMap();
-                    });
-                });
-
-                function updateMap() {
-                    var divisions = getSelectedDivisions();
-                    var campuses = getSelectedCampuses();
-                    var maxPop = parseInt(document.getElementById("population").value);
-                    document.getElementById("pop-value").textContent = maxPop.toLocaleString();
-                    markers.clearLayers();
-                    allMarkers.forEach(m => {
-                        const matchesDivision = divisions.includes(m.data.division);
-                        const matchesCampus = !campuses || campuses.includes(m.data.campus_type);
-                        const matchesPopulation = m.data.student_population <= maxPop;
-                        if (matchesDivision && matchesCampus && matchesPopulation) {
-                            markers.addLayer(m.marker);
-                        }
-                    });
-                }
-
-                function resetFilters() {
-                    document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
-                    document.getElementById("population").value = 70000;
-                    document.getElementById("pop-value").textContent = "70,000";
-                    updateMap();
-                }
-
-                document.getElementById("population").addEventListener("input", updateMap);
-                document.getElementById("reset-btn").addEventListener("click", resetFilters);
-                updateMap();
-            })
-            .catch(error => console.error('Error:', error));
-
-        function addToFavorites(name, location, campus, division) {
-            if (!favorites.some(item => item.name === name)) {
-                favorites.push({ name, location, campus, division });
-                updateFavoritesList();
-            }
-        }
-
-        function removeFromFavorites(name) {
-            favorites = favorites.filter(item => item.name !== name);
-            updateFavoritesList();
-        }
-
-        function updateFavoritesList() {
-            var favList = document.getElementById("favorites-list");
-            favList.innerHTML = "";
-            favorites.forEach(item => {
-                var div = document.createElement("div");
-                div.className = "favorite-item";
-                div.innerHTML = `<span><b>${item.name}</b> - ${item.location} (${item.division})</span>
-                                 <button class="remove-btn" onclick="removeFromFavorites('${item.name}')">❌</button>`;
-                favList.appendChild(div);
-            });
-        }
-
-        async function downloadPDF() {
-            if (favorites.length === 0) {
-                alert("No favorites to download!");
-                return;
-            }
-            var tempContainer = document.createElement("div");
-            tempContainer.style.padding = "20px";
-            tempContainer.style.background = "white";
-            tempContainer.innerHTML = `<h2 style="text-align:center; color:#0073E6;">Swim Connect Favorites</h2>`;
-            favorites.forEach((item, index) => {
-                tempContainer.innerHTML += `<p>${index+1}. <b>${item.name}</b> - ${item.location} (${item.division})</p>`;
-            });
-            document.body.appendChild(tempContainer);
-            const canvas = await html2canvas(tempContainer);
-            const imgData = canvas.toDataURL('image/png');
-            var { jsPDF } = window.jspdf;
-            var pdf = new jsPDF();
-            pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
-            pdf.save("Swim_Connect_Favorites.pdf");
-            document.body.removeChild(tempContainer);
-        }
-    </script>
+    <!-- Link to the JavaScript file -->
+    <script src="script.js"></script>
 </body>
 </html>
